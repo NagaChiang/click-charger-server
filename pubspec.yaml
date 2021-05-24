@@ -4,5 +4,9 @@ description: Server for Click Charger.
 environment:
   sdk: '>=2.10.0 <3.0.0'
 
+dependencies:
+  shelf: ^1.1.4
+  shelf_router: ^1.0.0
+
 dev_dependencies:
   pedantic: ^1.9.0
