@@ -18,6 +18,9 @@ Future main(List<String> arguments) async {
   );
 }
 
-Response _iapHandler(Request request) {
-  return Response.ok('hello!');
+Future<Response> _iapHandler(Request request) async {
+  final body = await request.readAsString();
+  print(body);
+
+  return Response.ok(body);
 }
