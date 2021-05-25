@@ -4,10 +4,11 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
 
+final _router = Router()..get('/iap', _iapHandler);
+
 Future main(List<String> arguments) async {
   final port = int.parse(Platform.environment['PORT'] ?? '8080');
-  final router = Router()..get('/iap', _iapHandler);
-  final cascade = Cascade().add(router);
+  final cascade = Cascade().add(_router);
   final pipeline =
       Pipeline().addMiddleware(logRequests()).addHandler(cascade.handler);
   final server = await serve(
