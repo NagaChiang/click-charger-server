@@ -1,25 +1,12 @@
 import 'dart:io';
 
-import 'package:shelf/shelf.dart';
-import 'package:shelf/shelf_io.dart';
-import 'package:shelf_router/shelf_router.dart';
+import 'package:click_charger_server/click_charger_server.dart';
 
 Future main(List<String> arguments) async {
   final port = int.parse(Platform.environment['PORT'] ?? '8080');
-  final router = Router()..post('/iap', _iapHandler);
-  final cascade = Cascade().add(router);
-  final pipeline =
-      Pipeline().addMiddleware(logRequests()).addHandler(cascade.handler);
-  final server = await serve(
-    pipeline,
-    InternetAddress.anyIPv4,
-    port,
-  );
-}
 
-Future<Response> _iapHandler(Request request) async {
-  final body = await request.readAsString();
-  print(body);
+  print('Server started: ${InternetAddress.anyIPv4}:$port');
 
-  return Response.ok(DateTime.now().toUtc().toIso8601String());
+  final server = ClickChargerServer();
+  await server.serve(InternetAddress.anyIPv4, port);
 }

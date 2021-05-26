@@ -2,7 +2,7 @@ name: click_charger_server
 description: Server for Click Charger.
 
 environment:
-  sdk: '>=2.10.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   shelf: ^1.1.4
