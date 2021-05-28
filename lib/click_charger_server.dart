@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:click_charger_server/models/RTDN/realtime_developer_notification.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 
 class ClickChargerServer {
+  late final HttpServer? _server;
   late final Router _router;
   late final Cascade _cascade;
   late final Handler _pipeline;
@@ -17,13 +20,27 @@ class ClickChargerServer {
   }
 
   Future<void> serve(address, int port) async {
-    await shelf_io.serve(_pipeline, address, port);
+    _server = await shelf_io.serve(_pipeline, address, port);
+  }
+
+  Future<void> close({bool force = false}) async {
+    await _server?.close(force: force);
   }
 
   Future<Response> _iapHandler(Request request) async {
-    final body = await request.readAsString();
-    print(body);
+    final bodyString = await request.readAsString();
 
-    return Response.ok(DateTime.now().toUtc().toIso8601String());
+    var data = '';
+    try {
+      final bodyJson = json.decode(bodyString);
+      data = bodyJson['message']['data'] as String;
+    } catch (error) {
+      return Response(HttpStatus.badRequest);
+    }
+
+    final notification = RealtimeDeveloperNotification.base64(data);
+    if (notification.oneTimeProductNotification != null) {}
+
+    return Response.ok(null);
   }
 }
