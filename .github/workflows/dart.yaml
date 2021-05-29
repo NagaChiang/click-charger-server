@@ -1,0 +1,16 @@
+name: Dart
+on: push
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container: google/dart
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Install Dependencies
+        run: dart pub get
+
+      - name: Run tests
+        run: dart test
