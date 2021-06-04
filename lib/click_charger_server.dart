@@ -45,7 +45,17 @@ class ClickChargerServer {
     }
 
     final notification = RealtimeDeveloperNotification.base64(data);
-    if (notification.oneTimeProductNotification != null) {}
+    if (notification.oneTimeProductNotification != null) {
+      final transaction = Transaction(
+        purchaseToken: notification.oneTimeProductNotification!.purchaseToken,
+        timestampInMillis: notification.eventTimeMillis,
+        productId: notification.oneTimeProductNotification!.sku,
+      );
+
+      print('[One-time product notification] ${transaction.toString()}');
+
+      await transactionsCollection.create(transaction);
+    }
 
     return Response.ok(null);
   }

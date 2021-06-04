@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:click_charger_server/click_charger_server.dart';
+import 'package:click_charger_server/models/databases/transactions_collection.dart';
 import 'package:click_charger_server/models/RTDN/realtime_developer_notification.dart';
 import 'package:click_charger_server/models/RTDN/test_notification.dart';
 import 'package:click_charger_server/models/RTDN/one_time_product_notification.dart';
@@ -59,16 +60,20 @@ void main() {
   });
 
   test('/iap: One-time Product Notification', () async {
+    const purchaseToken = 'PURCHASE_TOKEN';
+    final timestampInMillis = DateTime.now().toUtc().millisecondsSinceEpoch;
+    const productId = 'PRODUCT_ID';
+
     final url = Uri.parse('$baseUrl/iap');
     final notification = RealtimeDeveloperNotification(
         version: '1.0',
         packageName: 'com.timespawn.clickCharger',
-        eventTimeMillis: DateTime.now().millisecondsSinceEpoch,
+        eventTimeMillis: timestampInMillis,
         oneTimeProductNotification: OneTimeProductNotification(
           version: '1.0',
           notificationType: OneTimeNotificationType.purchased,
-          purchaseToken: 'PURCHASE_TOKEN',
-          sku: 'PRODUCT_ID',
+          purchaseToken: purchaseToken,
+          sku: productId,
         ));
     final data = base64.encode(utf8.encode(json.encode(notification.toJson())));
     final body = '''{
@@ -84,5 +89,12 @@ void main() {
     final response = await http.post(url, body: body);
 
     expect(response.statusCode, HttpStatus.ok);
+
+    final transaction = await transactionsCollection.read(purchaseToken);
+    await transactionsCollection.delete(purchaseToken);
+
+    expect(transaction.purchaseToken, purchaseToken);
+    expect(transaction.timestampInMillis, timestampInMillis);
+    expect(transaction.productId, productId);
   });
 }
