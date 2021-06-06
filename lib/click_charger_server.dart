@@ -1,14 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:click_charger_server/models/databases/transactions_collection.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
 
-import 'package:click_charger_server/models/RTDN/realtime_developer_notification.dart';
-import 'package:click_charger_server/models/databases/transaction.dart';
+import 'package:click_charger_server/controllers/iapController.dart';
 
 class ClickChargerServer {
   late final HttpServer _server;
@@ -19,7 +16,7 @@ class ClickChargerServer {
   ClickChargerServer() {
     dotenv.load();
 
-    _router = Router()..post('/iap', _iapHandler);
+    _router = Router()..post('/rtdn', iapController.rtdn);
     _cascade = Cascade().add(_router);
     _pipeline =
         Pipeline().addMiddleware(logRequests()).addHandler(_cascade.handler);
@@ -31,32 +28,5 @@ class ClickChargerServer {
 
   Future<void> close({bool force = false}) async {
     await _server.close(force: force);
-  }
-
-  Future<Response> _iapHandler(Request request) async {
-    final bodyString = await request.readAsString();
-
-    var data = '';
-    try {
-      final bodyJson = json.decode(bodyString);
-      data = bodyJson['message']['data'] as String;
-    } catch (error) {
-      return Response(HttpStatus.badRequest);
-    }
-
-    final notification = RealtimeDeveloperNotification.base64(data);
-    if (notification.oneTimeProductNotification != null) {
-      final transaction = Transaction(
-        purchaseToken: notification.oneTimeProductNotification!.purchaseToken,
-        timestampInMillis: notification.eventTimeMillis,
-        productId: notification.oneTimeProductNotification!.sku,
-      );
-
-      print('[One-time product notification] ${transaction.toString()}');
-
-      await transactionsCollection.create(transaction);
-    }
-
-    return Response.ok(null);
   }
 }

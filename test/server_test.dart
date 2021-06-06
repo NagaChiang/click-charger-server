@@ -11,6 +11,8 @@ import 'package:click_charger_server/models/RTDN/test_notification.dart';
 import 'package:click_charger_server/models/RTDN/one_time_product_notification.dart';
 
 void main() {
+  const rtdnApiName = 'rtdn';
+
   final internetAddress = InternetAddress.anyIPv4;
   final port = int.parse(Platform.environment['PORT'] ?? '8080');
   final baseUrl = 'http://127.0.0.1:$port';
@@ -26,17 +28,17 @@ void main() {
     server.close(force: true);
   });
 
-  test('/iap: Bad Request', () async {
+  test('/$rtdnApiName: Bad Request', () async {
     final client = HttpClient();
-    final url = Uri.parse('$baseUrl/iap');
+    final url = Uri.parse('$baseUrl/$rtdnApiName');
     final request = await client.postUrl(url);
     final response = await request.close();
 
     expect(response.statusCode, HttpStatus.badRequest);
   });
 
-  test('/iap: Test Notification', () async {
-    final url = Uri.parse('$baseUrl/iap');
+  test('/$rtdnApiName: Test Notification', () async {
+    final url = Uri.parse('$baseUrl/$rtdnApiName');
     final notification = RealtimeDeveloperNotification(
       version: '1.0',
       packageName: 'com.timespawn.clickCharger',
@@ -59,12 +61,12 @@ void main() {
     expect(response.statusCode, HttpStatus.ok);
   });
 
-  test('/iap: One-time Product Notification', () async {
+  test('/$rtdnApiName: One-time Product Notification', () async {
     const purchaseToken = 'PURCHASE_TOKEN';
     final timestampInMillis = DateTime.now().toUtc().millisecondsSinceEpoch;
     const productId = 'PRODUCT_ID';
 
-    final url = Uri.parse('$baseUrl/iap');
+    final url = Uri.parse('$baseUrl/$rtdnApiName');
     final notification = RealtimeDeveloperNotification(
         version: '1.0',
         packageName: 'com.timespawn.clickCharger',
