@@ -4,22 +4,24 @@ import 'package:click_charger_server/models/databases/transaction.dart';
 final transactionsCollection = TransactionsCollection();
 
 class TransactionsCollection {
-  static const collectionId = 'transactions';
+  static const _collectionId = 'transactions';
 
-  Future<void> create(Transaction transaction) async {
-    await firebaseApi.create(
-      collectionId,
+  Future<Transaction?> create(Transaction transaction) async {
+    final document = await firestoreApi.create(
+      _collectionId,
       transaction.purchaseToken,
       transaction.toDocument(),
     );
+
+    return document != null ? Transaction.fromDocument(document) : null;
   }
 
-  Future<Transaction> read(String purchaseToken) async {
-    final document = await firebaseApi.read(collectionId, purchaseToken);
-    return Transaction.fromDocument(document);
+  Future<Transaction?> read(String purchaseToken) async {
+    final document = await firestoreApi.read(_collectionId, purchaseToken);
+    return document != null ? Transaction.fromDocument(document) : null;
   }
 
-  Future<void> delete(String purchaseToken) async {
-    await firebaseApi.delete(collectionId, purchaseToken);
+  Future<bool> delete(String purchaseToken) async {
+    return await firestoreApi.delete(_collectionId, purchaseToken);
   }
 }

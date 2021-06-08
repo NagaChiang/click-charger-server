@@ -16,7 +16,9 @@ class ClickChargerServer {
   ClickChargerServer() {
     dotenv.load();
 
-    _router = Router()..post('/rtdn', iapController.rtdn);
+    _router = Router()
+      ..post('/rtdn', iapController.rtdn)
+      ..post('/verify', iapController.verify);
     _cascade = Cascade().add(_router);
     _pipeline =
         Pipeline().addMiddleware(logRequests()).addHandler(_cascade.handler);

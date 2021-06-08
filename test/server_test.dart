@@ -1,17 +1,21 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:click_charger_server/models/data/product_data.dart';
 import 'package:test/test.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:click_charger_server/click_charger_server.dart';
 import 'package:click_charger_server/models/databases/transactions_collection.dart';
+import 'package:click_charger_server/models/databases/transaction.dart';
+import 'package:click_charger_server/models/databases/users_collection.dart';
 import 'package:click_charger_server/models/RTDN/realtime_developer_notification.dart';
 import 'package:click_charger_server/models/RTDN/test_notification.dart';
 import 'package:click_charger_server/models/RTDN/one_time_product_notification.dart';
 
 void main() {
   const rtdnApiName = 'rtdn';
+  const verifyApiName = 'verify';
 
   final internetAddress = InternetAddress.anyIPv4;
   final port = int.parse(Platform.environment['PORT'] ?? '8080');
@@ -28,57 +32,25 @@ void main() {
     server.close(force: true);
   });
 
-  test('/$rtdnApiName: Bad Request', () async {
-    final client = HttpClient();
-    final url = Uri.parse('$baseUrl/$rtdnApiName');
-    final request = await client.postUrl(url);
-    final response = await request.close();
+  group('/$rtdnApiName', () {
+    test('Bad Request', () async {
+      final url = Uri.parse('$baseUrl/$rtdnApiName');
+      final response = await http.post(url);
 
-    expect(response.statusCode, HttpStatus.badRequest);
-  });
+      expect(response.statusCode, HttpStatus.badRequest);
+    });
 
-  test('/$rtdnApiName: Test Notification', () async {
-    final url = Uri.parse('$baseUrl/$rtdnApiName');
-    final notification = RealtimeDeveloperNotification(
-      version: '1.0',
-      packageName: 'com.timespawn.clickCharger',
-      eventTimeMillis: DateTime.now().millisecondsSinceEpoch,
-      testNotification: TestNotification(version: '1.0'),
-    );
-    final data = base64.encode(utf8.encode(json.encode(notification.toJson())));
-    final body = '''{
-      "message": {
-        "attributes": {
-          "key": "value"
-        },
-        "data": "$data",
-        "messageId": "136969346945"
-      },
-      "subscription": "projects/myproject/subscriptions/mysubscription"
-    }''';
-    final response = await http.post(url, body: body);
-
-    expect(response.statusCode, HttpStatus.ok);
-  });
-
-  test('/$rtdnApiName: One-time Product Notification', () async {
-    const purchaseToken = 'PURCHASE_TOKEN';
-    final timestampInMillis = DateTime.now().toUtc().millisecondsSinceEpoch;
-    const productId = 'PRODUCT_ID';
-
-    final url = Uri.parse('$baseUrl/$rtdnApiName');
-    final notification = RealtimeDeveloperNotification(
+    test('Test Notification', () async {
+      final url = Uri.parse('$baseUrl/$rtdnApiName');
+      final notification = RealtimeDeveloperNotification(
         version: '1.0',
         packageName: 'com.timespawn.clickCharger',
-        eventTimeMillis: timestampInMillis,
-        oneTimeProductNotification: OneTimeProductNotification(
-          version: '1.0',
-          notificationType: OneTimeNotificationType.purchased,
-          purchaseToken: purchaseToken,
-          sku: productId,
-        ));
-    final data = base64.encode(utf8.encode(json.encode(notification.toJson())));
-    final body = '''{
+        eventTimeMillis: DateTime.now().millisecondsSinceEpoch,
+        testNotification: TestNotification(version: '1.0'),
+      );
+      final data =
+          base64.encode(utf8.encode(json.encode(notification.toJson())));
+      final body = '''{
       "message": {
         "attributes": {
           "key": "value"
@@ -88,15 +60,161 @@ void main() {
       },
       "subscription": "projects/myproject/subscriptions/mysubscription"
     }''';
-    final response = await http.post(url, body: body);
+      final response = await http.post(url, body: body);
 
-    expect(response.statusCode, HttpStatus.ok);
+      expect(response.statusCode, HttpStatus.ok);
+    });
 
-    final transaction = await transactionsCollection.read(purchaseToken);
-    await transactionsCollection.delete(purchaseToken);
+    test('One-time Product Notification', () async {
+      const purchaseToken = 'PURCHASE_TOKEN';
+      final timestampInMillis = DateTime.now().toUtc().millisecondsSinceEpoch;
+      const productId = 'PRODUCT_ID';
 
-    expect(transaction.purchaseToken, purchaseToken);
-    expect(transaction.timestampInMillis, timestampInMillis);
-    expect(transaction.productId, productId);
+      final url = Uri.parse('$baseUrl/$rtdnApiName');
+      final notification = RealtimeDeveloperNotification(
+          version: '1.0',
+          packageName: 'com.timespawn.clickCharger',
+          eventTimeMillis: timestampInMillis,
+          oneTimeProductNotification: OneTimeProductNotification(
+            version: '1.0',
+            notificationType: OneTimeNotificationType.purchased,
+            purchaseToken: purchaseToken,
+            sku: productId,
+          ));
+      final data =
+          base64.encode(utf8.encode(json.encode(notification.toJson())));
+      final body = '''{
+      "message": {
+        "attributes": {
+          "key": "value"
+        },
+        "data": "$data",
+        "messageId": "136969346945"
+      },
+      "subscription": "projects/myproject/subscriptions/mysubscription"
+    }''';
+      final response = await http.post(url, body: body);
+
+      expect(response.statusCode, HttpStatus.ok);
+
+      final transaction = await transactionsCollection.read(purchaseToken);
+      expect(transaction, isNotNull);
+
+      // Clean up
+      expect(await transactionsCollection.delete(purchaseToken), isTrue);
+
+      // Test
+      expect(transaction!.purchaseToken, purchaseToken);
+      expect(transaction.timestampInMillis, timestampInMillis);
+      expect(transaction.productId, productId);
+    });
+  });
+
+  group('/$verifyApiName', () {
+    test('Bad Request', () async {
+      final url = Uri.parse('$baseUrl/$verifyApiName');
+      final response = await http.post(url);
+
+      expect(response.statusCode, HttpStatus.badRequest);
+    });
+
+    test('Transaction Not Found', () async {
+      const uid = 'UID';
+      const purchaseToken = 'PURCHASE_TOKEN_NOT_EXIST';
+
+      final url = Uri.parse('$baseUrl/$verifyApiName');
+      final response = await http.post(
+        url,
+        body: json.encode({
+          'uid': uid,
+          'purchaseToken': purchaseToken,
+        }),
+      );
+
+      expect(response.statusCode, HttpStatus.notFound);
+    });
+
+    test('User Not Found', () async {
+      const uid = 'UID_NOT_EXIST';
+      const purchaseToken = 'PURCHASE_TOKEN';
+
+      // Prepare
+      final transaction = await transactionsCollection.create(
+        Transaction(
+          purchaseToken: purchaseToken,
+          timestampInMillis: DateTime.now().millisecondsSinceEpoch,
+          productId: 'PRODUCT_ID',
+        ),
+      );
+
+      expect(transaction, isNotNull);
+
+      // Test
+      final url = Uri.parse('$baseUrl/$verifyApiName');
+      final response = await http.post(
+        url,
+        body: json.encode({
+          'uid': uid,
+          'purchaseToken': purchaseToken,
+        }),
+      );
+
+      // Clean up
+      expect(await transactionsCollection.delete(purchaseToken), isTrue);
+
+      // Test
+      expect(response.statusCode, HttpStatus.notFound);
+    });
+
+    group('Product ID', () {
+      void testProductId(String productId) {
+        test(productId, () async {
+          const uid = 'UID';
+          const purchaseToken = 'PURCHASE_TOKEN';
+
+          // Prepare
+          final transaction = await transactionsCollection.create(
+            Transaction(
+              purchaseToken: purchaseToken,
+              timestampInMillis: DateTime.now().millisecondsSinceEpoch,
+              productId: productId,
+            ),
+          );
+
+          expect(transaction, isNotNull);
+          expect(usersCollection.createTestUser(uid, 0, DateTime.now()),
+              isNotNull);
+
+          // Test
+          final url = Uri.parse('$baseUrl/$verifyApiName');
+          final response = await http.post(
+            url,
+            body: json.encode({
+              'uid': uid,
+              'purchaseToken': purchaseToken,
+            }),
+          );
+
+          final updatedUser = await usersCollection.readRaw(uid);
+          expect(updatedUser, isNotNull);
+
+          // Clean up
+          expect(await transactionsCollection.delete(purchaseToken), isTrue);
+          expect(await usersCollection.delete(uid), isTrue);
+
+          // Test
+          expect(response.statusCode, HttpStatus.ok);
+
+          final boostCount = await productData.getBoostCount(productId);
+          expect(
+            updatedUser['fields']['boostCount']['integerValue'],
+            boostCount.toString(),
+          );
+        });
+      }
+
+      testProductId('boost_pack_1');
+      testProductId('boost_pack_3');
+    });
   });
 }

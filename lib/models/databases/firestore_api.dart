@@ -6,12 +6,14 @@ import 'package:http/http.dart' as http;
 
 import 'package:click_charger_server/config.dart';
 
-final firebaseApi = FirestoreApi();
+final firestoreApi = FirestoreApi();
 
 class FirestoreApi {
   static const baseUrl = 'firestore.googleapis.com';
-  static String get basePath =>
+  static String get uriBasePath =>
       'v1/projects/${Config.firebaseProjectId}/databases/(default)/documents';
+  static String get documentBasePath =>
+      'projects/${Config.firebaseProjectId}/databases/(default)/documents';
 
   final String serviceAccountFilePath;
 
@@ -27,11 +29,11 @@ class FirestoreApi {
     final accessToken = await _getAccessToken();
     final uri = Uri.https(
       '$baseUrl',
-      '$basePath/$collectionId',
+      '$uriBasePath/$collectionId',
       {'documentId': documentId},
     );
 
-    http.Response? response;
+    http.Response response;
     try {
       response = await http.post(
         uri,
@@ -40,18 +42,24 @@ class FirestoreApi {
       );
     } catch (error) {
       print(error);
+      return null;
     }
 
-    print('Firestore API: POST $uri (${response?.statusCode})');
+    print('Firestore API: POST $uri (${response.statusCode})');
 
-    return response != null ? json.decode(response.body) : null;
+    if (response.statusCode != HttpStatus.ok) {
+      print(response.body);
+      return null;
+    }
+
+    return json.decode(response.body);
   }
 
   Future<dynamic> read(String collectionId, String documentId) async {
     final accessToken = await _getAccessToken();
-    final uri = Uri.https('$baseUrl', '$basePath/$collectionId/$documentId');
+    final uri = Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId');
 
-    http.Response? response;
+    http.Response response;
     try {
       response = await http.get(
         uri,
@@ -59,11 +67,17 @@ class FirestoreApi {
       );
     } catch (error) {
       print(error);
+      return null;
     }
 
-    print('Firestore API: GET $uri (${response?.statusCode})');
+    print('Firestore API: GET $uri (${response.statusCode})');
 
-    return response != null ? json.decode(response.body) : null;
+    if (response.statusCode != HttpStatus.ok) {
+      print(response.body);
+      return null;
+    }
+
+    return json.decode(response.body);
   }
 
   Future<dynamic> update(
@@ -73,12 +87,13 @@ class FirestoreApi {
     dynamic document,
   ) async {
     final accessToken = await _getAccessToken();
-    final uri = Uri.https('$baseUrl', '$basePath/$collectionId/$documentId', {
+    final uri =
+        Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId', {
       'currentDocument.exists': 'true',
       'updateMask.fieldPaths': updateMask,
     });
 
-    http.Response? response;
+    http.Response response;
     try {
       response = await http.patch(
         uri,
@@ -87,18 +102,24 @@ class FirestoreApi {
       );
     } catch (error) {
       print(error);
+      return null;
     }
 
-    print('Firestore API: PATCH $uri (${response?.statusCode})');
+    print('Firestore API: PATCH $uri (${response.statusCode})');
 
-    return response != null ? json.decode(response.body) : null;
+    if (response.statusCode != HttpStatus.ok) {
+      print(response.body);
+      return null;
+    }
+
+    return json.decode(response.body);
   }
 
-  Future<void> delete(String collectionId, String documentId) async {
+  Future<bool> delete(String collectionId, String documentId) async {
     final accessToken = await _getAccessToken();
-    final uri = Uri.https('$baseUrl', '$basePath/$collectionId/$documentId');
+    final uri = Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId');
 
-    http.Response? response;
+    http.Response response;
     try {
       response = await http.delete(
         uri,
@@ -106,9 +127,80 @@ class FirestoreApi {
       );
     } catch (error) {
       print(error);
+      return false;
     }
 
-    print('Firestore API: DELETE $uri (${response?.statusCode})');
+    print('Firestore API: DELETE $uri (${response.statusCode})');
+
+    if (response.statusCode != HttpStatus.ok) {
+      print(response.body);
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<bool> add(
+    String collectionId,
+    String documentId,
+    String fieldPath,
+    int amount,
+  ) async {
+    final accessToken = await _getAccessToken();
+
+    Uri uri;
+    http.Response response;
+    try {
+      // Begin transaction
+      uri = Uri.https('$baseUrl', '$uriBasePath:beginTransaction');
+      response = await http.post(
+        uri,
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+
+      print('Firestore API: POST $uri (${response.statusCode})');
+      if (response.statusCode != HttpStatus.ok) {
+        print(response.body);
+        return false;
+      }
+
+      final transactionId = json.decode(response.body)['transaction'];
+
+      // Commit
+      uri = Uri.https('$baseUrl', '$uriBasePath:commit');
+      response = await http.post(
+        uri,
+        headers: {'Authorization': 'Bearer $accessToken'},
+        body: json.encode({
+          'transaction': transactionId,
+          'writes': [
+            {
+              'currentDocument': {'exists': true},
+              'transform': {
+                'document': '$documentBasePath/$collectionId/$documentId',
+                'fieldTransforms': [
+                  {
+                    'fieldPath': fieldPath,
+                    'increment': {'integerValue': amount.toString()}
+                  }
+                ],
+              },
+            }
+          ],
+        }),
+      );
+
+      print('Firestore API: POST $uri (${response.statusCode})');
+      if (response.statusCode != HttpStatus.ok) {
+        print(response.body);
+        return false;
+      }
+    } catch (error) {
+      print(error);
+      return false;
+    }
+
+    return response.statusCode == HttpStatus.ok;
   }
 
   Future<String> _getAccessToken() async {
