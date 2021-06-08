@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:shelf/shelf.dart';
 
 import 'package:click_charger_server/models/data/product_data.dart';
-import 'package:click_charger_server/models/databases/transaction.dart';
-import 'package:click_charger_server/models/databases/transactions_collection.dart';
-import 'package:click_charger_server/models/databases/users_collection.dart';
+import 'package:click_charger_server/models/firestore/transaction.dart';
+import 'package:click_charger_server/models/firestore/transactions_collection.dart';
+import 'package:click_charger_server/models/firestore/users_collection.dart';
 import 'package:click_charger_server/models/RTDN/realtime_developer_notification.dart';
 
 final iapController = IapController();

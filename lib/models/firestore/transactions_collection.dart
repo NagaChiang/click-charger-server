@@ -1,5 +1,5 @@
-import 'package:click_charger_server/models/databases/firestore_api.dart';
-import 'package:click_charger_server/models/databases/transaction.dart';
+import 'package:click_charger_server/models/firestore/firestore_api.dart';
+import 'package:click_charger_server/models/firestore/transaction.dart';
 
 final transactionsCollection = TransactionsCollection();
 
