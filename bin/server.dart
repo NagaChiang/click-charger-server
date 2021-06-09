@@ -1,7 +1,8 @@
 import 'dart:io';
 
-import 'package:click_charger_server/click_charger_server.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
+
+import 'package:click_charger_server/click_charger_server.dart';
 
 Future main(List<String> arguments) async {
   final pubspecFile = File('pubspec.yaml');

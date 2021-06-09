@@ -6,7 +6,9 @@ import 'package:http/http.dart' as http;
 
 import 'package:click_charger_server/config.dart';
 
-final firestoreApi = FirestoreApi();
+final firestoreApi = FirestoreApi(
+  serviceAccountFilePath: 'service-account.json',
+);
 
 class FirestoreApi {
   static const baseUrl = 'firestore.googleapis.com';
@@ -19,7 +21,7 @@ class FirestoreApi {
 
   String? _accessToken;
 
-  FirestoreApi({this.serviceAccountFilePath = 'service-account.json'});
+  FirestoreApi({required this.serviceAccountFilePath});
 
   Future<dynamic> create(
     String collectionId,
