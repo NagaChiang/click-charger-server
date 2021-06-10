@@ -5,7 +5,7 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:dotenv/dotenv.dart' as dotenv;
 
-import 'package:click_charger_server/controllers/iapController.dart';
+import 'package:click_charger_server/controllers/iap_controller.dart';
 
 class ClickChargerServer {
   late final HttpServer _server;
