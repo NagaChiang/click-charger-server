@@ -142,7 +142,7 @@ class FirestoreApi {
     return true;
   }
 
-  Future<bool> add(
+  Future<int?> add(
     String collectionId,
     String documentId,
     String fieldPath,
@@ -163,7 +163,7 @@ class FirestoreApi {
       print('Firestore API: POST $uri (${response.statusCode})');
       if (response.statusCode != HttpStatus.ok) {
         print(response.body);
-        return false;
+        return null;
       }
 
       final transactionId = json.decode(response.body)['transaction'];
@@ -195,14 +195,16 @@ class FirestoreApi {
       print('Firestore API: POST $uri (${response.statusCode})');
       if (response.statusCode != HttpStatus.ok) {
         print(response.body);
-        return false;
+        return null;
       }
+
+      final resultValue = int.parse(json.decode(response.body)['writeResults']
+          [0]['transformResults'][0]['integerValue']);
+      return resultValue;
     } catch (error) {
       print(error);
-      return false;
+      return null;
     }
-
-    return response.statusCode == HttpStatus.ok;
   }
 
   Future<String> _getAccessToken() async {

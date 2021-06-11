@@ -50,17 +50,21 @@ class IapController {
       return Response(HttpStatus.badRequest);
     }
 
+    print('[Verify] uid = $uid, purchaseToken = $purchaseToken');
+
     final transaction = await transactionsCollection.read(purchaseToken);
     if (transaction == null) {
+      print('[Verify] Transaction not found');
       return Response.notFound('Transaction not found.');
     }
 
     final boostCount = await productData.getBoostCount(transaction.productId);
-    final addResult = await usersCollection.addBoostCount(uid, boostCount);
-    if (!addResult) {
+    final addResultValue = await usersCollection.addBoostCount(uid, boostCount);
+    if (addResultValue == null) {
+      print('[Verify] User not found');
       return Response.notFound('User not found.');
     }
 
-    return Response.ok(null);
+    return Response.ok(json.encode({'result': addResultValue}));
   }
 }

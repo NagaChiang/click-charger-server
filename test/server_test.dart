@@ -159,7 +159,7 @@ void main() {
         }),
       );
 
-      // Clean up
+      // Clean upW
       expect(await transactionsCollection.delete(purchaseToken), isTrue);
 
       // Test
@@ -205,10 +205,12 @@ void main() {
           // Test
           expect(response.statusCode, HttpStatus.ok);
 
-          final boostCount = await productData.getBoostCount(productId);
+          final productBoostCount = await productData.getBoostCount(productId);
+          final resultBoostCount = json.decode(response.body)['result'];
+          expect(resultBoostCount, productBoostCount);
           expect(
             updatedUser['fields']['boostCount']['integerValue'],
-            boostCount.toString(),
+            productBoostCount.toString(),
           );
         });
       }

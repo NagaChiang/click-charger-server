@@ -7,7 +7,7 @@ class UsersCollection {
   static const _boostCountFieldPath = 'boostCount';
   static const _boostEndTimeFieldPath = 'boostEndTime';
 
-  Future<bool> addBoostCount(String uid, int count) async {
+  Future<int?> addBoostCount(String uid, int count) async {
     return await firestoreApi.add(
       _collectionId,
       uid,
