@@ -12,10 +12,16 @@ part 'realtime_developer_notification.g.dart';
 class RealtimeDeveloperNotification {
   late final String version;
   late final String packageName;
+
+  @JsonKey(fromJson: timeFromJson, toJson: timeToJson)
   late final int eventTimeMillis;
+
   late final OneTimeProductNotification? oneTimeProductNotification;
   late final SubscriptionNotification? subscriptionNotification;
   late final TestNotification? testNotification;
+
+  static int timeFromJson(String value) => int.parse(value);
+  static String timeToJson(int value) => value.toString();
 
   RealtimeDeveloperNotification({
     required this.version,

@@ -30,9 +30,13 @@ class IapController {
         productId: notification.oneTimeProductNotification!.sku,
       );
 
-      print('[One-time product notification] ${transaction.toString()}');
+      print('[One-time Product Notification] ${transaction.toString()}');
 
       await transactionsCollection.create(transaction);
+    }
+
+    if (notification.testNotification != null) {
+      print('[Test Notification]');
     }
 
     return Response.ok(null);

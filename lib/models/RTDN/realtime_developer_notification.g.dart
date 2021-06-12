@@ -11,7 +11,8 @@ RealtimeDeveloperNotification _$RealtimeDeveloperNotificationFromJson(
   return RealtimeDeveloperNotification(
     version: json['version'] as String,
     packageName: json['packageName'] as String,
-    eventTimeMillis: json['eventTimeMillis'] as int,
+    eventTimeMillis: RealtimeDeveloperNotification.timeFromJson(
+        json['eventTimeMillis'] as String),
     oneTimeProductNotification: json['oneTimeProductNotification'] == null
         ? null
         : OneTimeProductNotification.fromJson(
@@ -32,7 +33,8 @@ Map<String, dynamic> _$RealtimeDeveloperNotificationToJson(
     <String, dynamic>{
       'version': instance.version,
       'packageName': instance.packageName,
-      'eventTimeMillis': instance.eventTimeMillis,
+      'eventTimeMillis':
+          RealtimeDeveloperNotification.timeToJson(instance.eventTimeMillis),
       'oneTimeProductNotification': instance.oneTimeProductNotification,
       'subscriptionNotification': instance.subscriptionNotification,
       'testNotification': instance.testNotification,
