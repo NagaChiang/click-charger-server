@@ -2,19 +2,10 @@ steps:
   - name: gcr.io/cloud-builders/docker
     entrypoint: 'bash'
     args:
-      - build
-      - '--no-cache'
-      - '-t'
-      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
-      - .
-      - '-f'
-      - Dockerfile
-      - '--build-arg'
-      - 'ENVDOT=$$ENVDOT'
-      - '--build-arg'
-      - 'SERVICE_ACCOUNT_JSON=$$SERVICE_ACCOUNT_JSON'
+      - '-c'
+      - 'docker build --no-cache -t $_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA . -f Dockerfile --build-arg "DOTENV=$$DOTENV" --build-arg "SERVICE_ACCOUNT_JSON=$$SERVICE_ACCOUNT_JSON"'
     secretEnv:
-      - 'ENVDOT'
+      - 'DOTENV'
       - 'SERVICE_ACCOUNT_JSON'
     id: Build
   - name: gcr.io/cloud-builders/docker
@@ -54,7 +45,7 @@ tags:
 availableSecrets:
   secretManager:
   - versionName: projects/593718523769/secrets/SERVER_DOTENV/versions/1
-    env: 'ENVDOT'
+    env: 'DOTENV'
   - versionName: projects/593718523769/secrets/SERVER_SERVICE_ACCOUNT_JSON/versions/1
     env: 'SERVICE_ACCOUNT_JSON'
 
