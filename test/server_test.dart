@@ -84,15 +84,15 @@ void main() {
       final data =
           base64.encode(utf8.encode(json.encode(notification.toJson())));
       final body = '''{
-      "message": {
-        "attributes": {
-          "key": "value"
+        "message": {
+          "attributes": {
+            "key": "value"
+          },
+          "data": "$data",
+          "messageId": "136969346945"
         },
-        "data": "$data",
-        "messageId": "136969346945"
-      },
-      "subscription": "projects/myproject/subscriptions/mysubscription"
-    }''';
+        "subscription": "projects/myproject/subscriptions/mysubscription"
+      }''';
       final response = await http.post(url, body: body);
 
       expect(response.statusCode, HttpStatus.ok);
@@ -107,6 +107,7 @@ void main() {
       expect(transaction!.purchaseToken, purchaseToken);
       expect(transaction.timestampInMillis, timestampInMillis);
       expect(transaction.productId, productId);
+      expect(transaction.consumedTime, isNull);
     });
   });
 
@@ -134,6 +135,39 @@ void main() {
       expect(response.statusCode, HttpStatus.notFound);
     });
 
+    test('Transaction Already Consumed', () async {
+      const uid = 'UID';
+      const purchaseToken = 'PURCHASE_TOKEN';
+
+      // Prepare
+      final transaction = await transactionsCollection.create(
+        Transaction(
+          purchaseToken: purchaseToken,
+          timestampInMillis: DateTime.now().millisecondsSinceEpoch,
+          productId: 'PRODUCT_ID',
+          consumedTime: DateTime.now(),
+        ),
+      );
+
+      expect(transaction, isNotNull);
+
+      // Test
+      final url = Uri.parse('$baseUrl/$verifyApiName');
+      final response = await http.post(
+        url,
+        body: json.encode({
+          'uid': uid,
+          'purchaseToken': purchaseToken,
+        }),
+      );
+
+      // Clean up
+      expect(await transactionsCollection.delete(purchaseToken), isTrue);
+
+      // Test
+      expect(response.statusCode, HttpStatus.conflict);
+    });
+
     test('User Not Found', () async {
       const uid = 'UID_NOT_EXIST';
       const purchaseToken = 'PURCHASE_TOKEN';
@@ -159,7 +193,7 @@ void main() {
         }),
       );
 
-      // Clean upW
+      // Clean up
       expect(await transactionsCollection.delete(purchaseToken), isTrue);
 
       // Test

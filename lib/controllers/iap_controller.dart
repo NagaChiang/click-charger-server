@@ -58,15 +58,27 @@ class IapController {
 
     final transaction = await transactionsCollection.read(purchaseToken);
     if (transaction == null) {
-      print('[Verify] Transaction not found');
-      return Response.notFound('Transaction not found.');
+      final message = 'Transaction "$purchaseToken" not found';
+      print('[Verify] $message');
+
+      return Response.notFound(message);
+    }
+
+    if (transaction.consumedTime != null) {
+      final message =
+          'Transaction "$purchaseToken" has already been consumed at ${transaction.consumedTime!.toUtc().toIso8601String()}';
+      print('[Verify] $message');
+
+      return Response(HttpStatus.conflict, body: message);
     }
 
     final boostCount = await productData.getBoostCount(transaction.productId);
     final addResultValue = await usersCollection.addBoostCount(uid, boostCount);
     if (addResultValue == null) {
-      print('[Verify] User not found');
-      return Response.notFound('User not found.');
+      final message = 'User "$uid" not found';
+      print('[Verify] $message');
+
+      return Response.notFound(message);
     }
 
     return Response.ok(json.encode({'result': addResultValue}));
