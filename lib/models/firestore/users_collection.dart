@@ -24,22 +24,7 @@ class UsersCollection {
     return await firestoreApi.read(_collectionId, uid);
   }
 
-  Future<dynamic> createTestUser(
-    String uid,
-    int boostCount,
-    DateTime boostEndTime,
-  ) async {
-    return await firestoreApi.create(
-      _collectionId,
-      uid,
-      {
-        'fields': {
-          _boostCountFieldPath: {'integerValue': boostCount.toString()},
-          _boostEndTimeFieldPath: {
-            'timestampValue': boostEndTime.toUtc().toIso8601String()
-          },
-        },
-      },
-    );
+  Future<dynamic> createDummyUser(String uid) async {
+    return await firestoreApi.create(_collectionId, uid, {});
   }
 }

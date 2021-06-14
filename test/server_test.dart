@@ -216,8 +216,7 @@ void main() {
           );
 
           expect(transaction, isNotNull);
-          expect(usersCollection.createTestUser(uid, 0, DateTime.now()),
-              isNotNull);
+          expect(usersCollection.createDummyUser(uid), isNotNull);
 
           // Test
           final url = Uri.parse('$baseUrl/$verifyApiName');
