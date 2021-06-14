@@ -75,7 +75,15 @@ class IapController {
     final boostCount = await productData.getBoostCount(transaction.productId);
     final addResultValue = await usersCollection.addBoostCount(uid, boostCount);
     if (addResultValue == null) {
-      final message = 'User "$uid" not found';
+      final message = 'Failed to add boost count for user "$uid"';
+      print('[Verify] $message');
+
+      return Response.notFound(message);
+    }
+
+    final removeAdResult = await usersCollection.removeAd(uid);
+    if (!removeAdResult) {
+      final message = 'Failed to remove ad for user "$uid"';
       print('[Verify] $message');
 
       return Response.notFound(message);

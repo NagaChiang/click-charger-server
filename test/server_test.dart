@@ -245,6 +245,10 @@ void main() {
             updatedUser['fields']['boostCount']['integerValue'],
             productBoostCount.toString(),
           );
+          expect(
+            updatedUser['fields']['isRemoveAd']['booleanValue'],
+            true,
+          );
         });
       }
 

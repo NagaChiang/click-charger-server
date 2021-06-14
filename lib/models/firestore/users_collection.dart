@@ -16,6 +16,21 @@ class UsersCollection {
     );
   }
 
+  Future<bool> removeAd(String uid) async {
+    final result = await firestoreApi.update(
+      _collectionId,
+      uid,
+      ['isRemoveAd'],
+      {
+        'fields': {
+          'isRemoveAd': {'booleanValue': true},
+        }
+      },
+    );
+
+    return result != null;
+  }
+
   Future<bool> delete(String uid) async {
     return await firestoreApi.delete(_collectionId, uid);
   }
