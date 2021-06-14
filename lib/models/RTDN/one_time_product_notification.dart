@@ -5,9 +5,16 @@ part 'one_time_product_notification.g.dart';
 @JsonSerializable()
 class OneTimeProductNotification {
   late final String version;
+
+  @JsonKey(fromJson: typeFromJson, toJson: typeToJson)
   late final OneTimeNotificationType notificationType;
+
   late final String purchaseToken;
   late final String sku;
+
+  static OneTimeNotificationType typeFromJson(int value) =>
+      OneTimeNotificationType.values[value];
+  static int typeToJson(OneTimeNotificationType type) => type.index;
 
   OneTimeProductNotification({
     required this.version,
