@@ -40,7 +40,7 @@ class FirestoreApi {
       response = await http.post(
         uri,
         headers: {'Authorization': 'Bearer $accessToken'},
-        body: json.encode(document),
+        body: json.encode(document ?? {}),
       );
     } catch (error) {
       print(error);

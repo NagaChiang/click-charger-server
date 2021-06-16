@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:click_charger_server/constants.dart';
 import 'package:click_charger_server/models/data/product_data.dart';
 import 'package:click_charger_server/models/firestore/transaction.dart';
 import 'package:click_charger_server/models/firestore/transactions_collection.dart';
@@ -12,11 +13,11 @@ import 'package:click_charger_server/models/firestore/users_collection.dart';
 import '../test_config.dart';
 
 void verifyTest() {
+  final url = Uri.parse('$baseUrl/$verifyApiName');
+
   group('/$verifyApiName', () {
     test('Bad Request', () async {
-      final url = Uri.parse('$baseUrl/$verifyApiName');
       final response = await http.post(url);
-
       expect(response.statusCode, HttpStatus.badRequest);
     });
 
@@ -24,7 +25,6 @@ void verifyTest() {
       const uid = 'UID';
       const purchaseToken = 'PURCHASE_TOKEN_NOT_EXIST';
 
-      final url = Uri.parse('$baseUrl/$verifyApiName');
       final response = await http.post(
         url,
         body: json.encode({
@@ -53,7 +53,6 @@ void verifyTest() {
       expect(transaction, isNotNull);
 
       // Test
-      final url = Uri.parse('$baseUrl/$verifyApiName');
       final response = await http.post(
         url,
         body: json.encode({
@@ -85,7 +84,6 @@ void verifyTest() {
       expect(transaction, isNotNull);
 
       // Test
-      final url = Uri.parse('$baseUrl/$verifyApiName');
       final response = await http.post(
         url,
         body: json.encode({
@@ -118,10 +116,9 @@ void verifyTest() {
             );
 
             expect(transaction, isNotNull);
-            expect(usersCollection.createDummyUser(uid), isNotNull);
+            expect(await usersCollection.create(uid), isNotNull);
 
             // Test
-            final url = Uri.parse('$baseUrl/$verifyApiName');
             final response = await http.post(
               url,
               body: json.encode({

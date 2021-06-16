@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:click_charger_server/constants.dart';
 import 'package:click_charger_server/models/RTDN/realtime_developer_notification.dart';
 import 'package:click_charger_server/models/RTDN/one_time_product_notification.dart';
 import 'package:click_charger_server/models/RTDN/test_notification.dart';
@@ -12,16 +13,16 @@ import 'package:click_charger_server/models/firestore/transactions_collection.da
 import '../test_config.dart';
 
 void rtdnTest() {
+  final url = Uri.parse('$baseUrl/$rtdnApiName');
+
   group('/$rtdnApiName', () {
     test('Bad Request', () async {
-      final url = Uri.parse('$baseUrl/$rtdnApiName');
       final response = await http.post(url);
 
       expect(response.statusCode, HttpStatus.badRequest);
     });
 
     test('Test Notification', () async {
-      final url = Uri.parse('$baseUrl/$rtdnApiName');
       final notification = RealtimeDeveloperNotification(
         version: '1.0',
         packageName: 'com.timespawn.clickCharger',
@@ -50,7 +51,6 @@ void rtdnTest() {
       final timestampInMillis = DateTime.now().toUtc().millisecondsSinceEpoch;
       const productId = 'PRODUCT_ID';
 
-      final url = Uri.parse('$baseUrl/$rtdnApiName');
       final notification = RealtimeDeveloperNotification(
           version: '1.0',
           packageName: 'com.timespawn.clickCharger',

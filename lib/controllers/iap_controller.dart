@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:shelf/shelf.dart';
 
+import 'package:click_charger_server/constants.dart';
 import 'package:click_charger_server/models/data/product_data.dart';
 import 'package:click_charger_server/models/firestore/transaction.dart';
 import 'package:click_charger_server/models/firestore/transactions_collection.dart';
@@ -90,5 +91,66 @@ class IapController {
     }
 
     return Response.ok(json.encode({'result': addResultValue}));
+  }
+
+  Future<Response> useBoost(Request request) async {
+    String uid;
+    int useCount;
+    try {
+      final bodyJson = json.decode(await request.readAsString());
+      uid = bodyJson['uid'] as String;
+      useCount = bodyJson['count'] as int;
+    } catch (error) {
+      print('$error');
+      return Response(HttpStatus.badRequest);
+    }
+
+    print('[UseBoost] User "$uid" uses $useCount boost(s)');
+
+    if (useCount <= 0) {
+      final message = 'User "$uid": use amount ($useCount) should not be <= 0';
+      print('[UseBoost] $message');
+      return Response(HttpStatus.badRequest, body: message);
+    }
+
+    final currentCount = await usersCollection.getBoostCount(uid);
+    if (currentCount == null) {
+      final message = 'User "$uid" not found';
+      print('[UseBoost] $message');
+      return Response(HttpStatus.notFound, body: message);
+    }
+
+    if (useCount > currentCount) {
+      final message =
+          'User "$uid" does not have enough boost (use: $useCount, own:$currentCount)';
+      print('[UseBoost] $message');
+      return Response(HttpStatus.conflict, body: message);
+    }
+
+    final newCount = await usersCollection.addBoostCount(uid, -useCount);
+    if (newCount == null) {
+      final message =
+          'User "$uid" failed to use boost (use: $useCount, own:$currentCount)';
+      print('[UseBoost] $message');
+      return Response(HttpStatus.internalServerError, body: message);
+    }
+
+    final currentEndTime =
+        await usersCollection.getBoostEndTime(uid) ?? DateTime.now();
+    final newEndTime = currentEndTime.add(durationPerBoost * useCount);
+    final result = await usersCollection.updateBoostEndTime(uid, newEndTime);
+    if (!result) {
+      final message =
+          'User "$uid" failed to update boost end time (new: $newEndTime, current: $currentEndTime)';
+      print('[UseBoost] $message');
+      print('[UseBoost] Recovering boost count ($useCount)...');
+      await usersCollection.addBoostCount(uid, useCount);
+      return Response(HttpStatus.internalServerError, body: message);
+    }
+
+    return Response.ok(json.encode({
+      'count': newCount,
+      'endTime': newEndTime.toUtc().toIso8601String(),
+    }));
   }
 }
