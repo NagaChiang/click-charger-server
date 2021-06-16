@@ -85,7 +85,7 @@ void useBoostTest() {
 
     group('Enough Boost', () {
       void testEnoughBoost(int useCount) {
-        test('Use $useCount', () async {
+        test('$useCount', () async {
           const uid = 'UID';
 
           // Prepare

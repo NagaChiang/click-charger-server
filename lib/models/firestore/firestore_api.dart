@@ -25,14 +25,14 @@ class FirestoreApi {
 
   Future<dynamic> create(
     String collectionId,
-    String documentId,
+    String? documentId,
     dynamic document,
   ) async {
     final accessToken = await _getAccessToken();
     final uri = Uri.https(
       '$baseUrl',
       '$uriBasePath/$collectionId',
-      {'documentId': documentId},
+      documentId != null ? {'documentId': documentId} : null,
     );
 
     http.Response response;
