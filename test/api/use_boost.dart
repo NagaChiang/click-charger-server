@@ -9,6 +9,12 @@ import 'package:click_charger_server/models/firestore/users_collection.dart';
 
 import '../test_config.dart';
 
+enum EndTimeType {
+  noField,
+  before,
+  after,
+}
+
 void useBoostTest() {
   final url = Uri.parse('$baseUrl/$useBoostApiName');
 
@@ -34,7 +40,7 @@ void useBoostTest() {
 
     group('Not Enough Boost', () {
       void testNotEnoughBoost({required bool hasField}) {
-        test('Not Enough Boost', () async {
+        test(hasField ? 'Has Count Field' : 'No Count Field', () async {
           const uid = 'UID';
 
           // Prepare
@@ -74,17 +80,43 @@ void useBoostTest() {
     });
 
     group('Enough Boost', () {
-      void testEnoughBoost(int useCount) {
-        test('$useCount', () async {
+      void testEnoughBoost(int useCount, EndTimeType currentEndTimeType) {
+        test('$useCount, $currentEndTimeType', () async {
           const uid = 'UID';
+          const endTimeShiftDuration = Duration(days: 1);
+          final boostDuration = durationPerBoost * useCount;
 
           // Prepare
+          DateTime? currentEndTime;
+          var shouldEndTime = DateTime.now();
+          switch (currentEndTimeType) {
+            case EndTimeType.noField:
+              shouldEndTime = DateTime.now().add(boostDuration);
+              break;
+            case EndTimeType.before:
+              currentEndTime = DateTime.now().subtract(endTimeShiftDuration);
+              shouldEndTime = DateTime.now().add(boostDuration);
+              break;
+            case EndTimeType.after:
+              currentEndTime = DateTime.now().add(endTimeShiftDuration);
+              shouldEndTime = currentEndTime.add(boostDuration);
+              break;
+          }
+
+          var document = {
+            'fields': {
+              'boostCount': {'integerValue': useCount.toString()},
+            },
+          };
+
+          if (currentEndTime != null) {
+            document['fields']!['boostEndTime'] = {
+              'timestampValue': currentEndTime.toUtc().toIso8601String(),
+            };
+          }
+
           expect(
-            await usersCollection.create(uid, document: {
-              'fields': {
-                'boostCount': {'integerValue': useCount.toString()},
-              },
-            }),
+            await usersCollection.create(uid, document: document),
             isNotNull,
           );
 
@@ -100,17 +132,25 @@ void useBoostTest() {
           final newCount = await usersCollection.getBoostCount(uid);
           expect(newCount, isNotNull);
 
+          final newEndTime = await usersCollection.getBoostEndTime(uid);
+          expect(newEndTime, isNotNull);
+
           // Clean up
           expect(await usersCollection.delete(uid), isTrue);
 
           // Test
           expect(response.statusCode, HttpStatus.ok);
           expect(newCount, 0);
+          expect(
+            newEndTime!.difference(shouldEndTime).abs(),
+            lessThan(Duration(seconds: 5)),
+          );
         });
       }
 
-      testEnoughBoost(1);
-      testEnoughBoost(5);
+      testEnoughBoost(1, EndTimeType.noField);
+      testEnoughBoost(2, EndTimeType.before);
+      testEnoughBoost(3, EndTimeType.after);
     });
   });
 }

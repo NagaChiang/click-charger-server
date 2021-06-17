@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:click_charger_server/models/firestore/boost_logs_collection.dart';
 import 'package:shelf/shelf.dart';
 
 import 'package:click_charger_server/constants.dart';
@@ -10,6 +9,7 @@ import 'package:click_charger_server/models/firestore/transaction.dart';
 import 'package:click_charger_server/models/firestore/transactions_collection.dart';
 import 'package:click_charger_server/models/firestore/users_collection.dart';
 import 'package:click_charger_server/models/firestore/boost_log.dart';
+import 'package:click_charger_server/models/firestore/boost_logs_collection.dart';
 import 'package:click_charger_server/models/RTDN/realtime_developer_notification.dart';
 
 final iapController = IapController();
@@ -148,7 +148,12 @@ class IapController {
     // Update end time
     final currentEndTime =
         await usersCollection.getBoostEndTime(uid) ?? DateTime.now();
-    final newEndTime = currentEndTime.add(durationPerBoost * useCount);
+    var startTime = DateTime.now();
+    if (currentEndTime.isAfter(DateTime.now())) {
+      startTime = currentEndTime;
+    }
+
+    final newEndTime = startTime.add(durationPerBoost * useCount);
     final updateTimeResult =
         await usersCollection.updateBoostEndTime(uid, newEndTime);
     if (!updateTimeResult) {
