@@ -32,55 +32,45 @@ void useBoostTest() {
       expect(response.statusCode, HttpStatus.notFound);
     });
 
-    test('Not Enough Boost', () async {
-      const uid = 'UID';
+    group('Not Enough Boost', () {
+      void testNotEnoughBoost({required bool hasField}) {
+        test('Not Enough Boost', () async {
+          const uid = 'UID';
 
-      // Prepare
-      expect(
-        await usersCollection.create(uid, document: {
-          'fields': {
-            'boostCount': {'integerValue': '0'},
-          },
-        }),
-        isNotNull,
-      );
+          // Prepare
+          expect(
+            await usersCollection.create(
+              uid,
+              document: hasField
+                  ? {
+                      'fields': {
+                        'boostCount': {'integerValue': '0'},
+                      },
+                    }
+                  : null,
+            ),
+            isNotNull,
+          );
 
-      // Test
-      final response = await http.post(
-        url,
-        body: json.encode({
-          'uid': uid,
-          'count': 1,
-        }),
-      );
+          // Test
+          final response = await http.post(
+            url,
+            body: json.encode({
+              'uid': uid,
+              'count': 1,
+            }),
+          );
 
-      // Clean up
-      expect(await usersCollection.delete(uid), isTrue);
+          // Clean up
+          expect(await usersCollection.delete(uid), isTrue);
 
-      // Test
-      expect(response.statusCode, HttpStatus.conflict);
-    });
+          // Test
+          expect(response.statusCode, HttpStatus.conflict);
+        });
+      }
 
-    test('Not Enough Boost (No Field)', () async {
-      const uid = 'UID';
-
-      // Prepare
-      expect(await usersCollection.create(uid), isNotNull);
-
-      // Test
-      final response = await http.post(
-        url,
-        body: json.encode({
-          'uid': uid,
-          'count': 1,
-        }),
-      );
-
-      // Clean up
-      expect(await usersCollection.delete(uid), isTrue);
-
-      // Test
-      expect(response.statusCode, HttpStatus.conflict);
+      testNotEnoughBoost(hasField: false);
+      testNotEnoughBoost(hasField: true);
     });
 
     group('Enough Boost', () {
