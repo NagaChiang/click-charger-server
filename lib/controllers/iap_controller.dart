@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:shelf/shelf.dart';
 
 import 'package:click_charger_server/constants.dart';
+import 'package:click_charger_server/config.dart';
+import 'package:click_charger_server/models/android_publisher/publisher_api.dart';
 import 'package:click_charger_server/models/data/product_data.dart';
 import 'package:click_charger_server/models/firestore/transaction.dart';
 import 'package:click_charger_server/models/firestore/transactions_collection.dart';
@@ -19,7 +21,7 @@ class IapController {
     RealtimeDeveloperNotification notification;
     try {
       final bodyJson = json.decode(await request.readAsString());
-      final data = bodyJson['message']['data'] as String;
+      final data = bodyJson['message']['data'];
       notification = RealtimeDeveloperNotification.base64(data);
     } catch (error) {
       print('$error');
@@ -47,11 +49,13 @@ class IapController {
 
   Future<Response> verify(Request request) async {
     String uid;
+    String productId;
     String purchaseToken;
     try {
       final bodyJson = json.decode(await request.readAsString());
-      uid = bodyJson['uid'] as String;
-      purchaseToken = bodyJson['purchaseToken'] as String;
+      uid = bodyJson['uid'];
+      productId = bodyJson['productId'];
+      purchaseToken = bodyJson['purchaseToken'];
     } catch (error) {
       print('$error');
       return Response(HttpStatus.badRequest);
@@ -59,9 +63,27 @@ class IapController {
 
     print('[Verify] uid = $uid, purchaseToken = $purchaseToken');
 
-    // Get transaction
+    // Verify transaction via Google API
+    final purchase = await publisherApi.get(
+      Config.firebaseProjectId,
+      productId,
+      purchaseToken,
+    );
+
+    // Check purchase state
+    if (purchase != null && !purchase.isPurchased) {
+      final message =
+          'Transaction "$purchaseToken" has not been purchased (purchaseState = ${purchase.purchaseState})';
+      print('[Verify] $message');
+
+      return Response(HttpStatus.conflict, body: message);
+    }
+
+    // Get transaction from database
     final transaction = await transactionsCollection.read(purchaseToken);
-    if (transaction == null) {
+
+    // Not found in neither source
+    if (purchase == null && transaction == null) {
       final message = 'Transaction "$purchaseToken" not found';
       print('[Verify] $message');
 
@@ -69,7 +91,7 @@ class IapController {
     }
 
     // Check transaction consumed or not
-    if (transaction.consumedTime != null) {
+    if (transaction != null && transaction.consumedTime != null) {
       final message =
           'Transaction "$purchaseToken" has already been consumed at ${transaction.consumedTime!.toUtc().toIso8601String()}';
       print('[Verify] $message');
@@ -78,7 +100,7 @@ class IapController {
     }
 
     // Add boost count for user
-    final boostCount = await productData.getBoostCount(transaction.productId);
+    final boostCount = await productData.getBoostCount(productId);
     final addResultValue = await usersCollection.addBoostCount(uid, boostCount);
     if (addResultValue == null) {
       final message = 'Failed to add boost count for user "$uid"';
@@ -94,6 +116,30 @@ class IapController {
       print('[Verify] $message');
 
       return Response.notFound(message);
+    }
+
+    // Log
+    if (transaction == null) {
+      // Create transaction
+      final doc = await transactionsCollection.create(Transaction(
+        purchaseToken: purchaseToken,
+        timestampInMillis: int.parse(purchase!.purchaseTimeMillis),
+        productId: productId,
+        consumedTime: DateTime.now(),
+      ));
+      if (doc == null) {
+        print(
+          '[Verify] Failed to create log for transaction "$purchaseToken"',
+        );
+      }
+    } else {
+      // Update transaction
+      final result = await transactionsCollection.markAsConsumed(purchaseToken);
+      if (!result) {
+        print(
+          '[Verify] Failed to mark transaction "$purchaseToken" as consumed',
+        );
+      }
     }
 
     return Response.ok(json.encode({'result': addResultValue}));

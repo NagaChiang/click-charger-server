@@ -23,12 +23,14 @@ void verifyTest() {
 
     test('Transaction Not Found', () async {
       const uid = 'UID';
+      const productId = 'boost';
       const purchaseToken = 'PURCHASE_TOKEN_NOT_EXIST';
 
       final response = await http.post(
         url,
         body: json.encode({
           'uid': uid,
+          'productId': productId,
           'purchaseToken': purchaseToken,
         }),
       );
@@ -38,6 +40,7 @@ void verifyTest() {
 
     test('Transaction Already Consumed', () async {
       const uid = 'UID';
+      const productId = 'boost';
       const purchaseToken = 'PURCHASE_TOKEN';
 
       // Prepare
@@ -45,7 +48,7 @@ void verifyTest() {
         Transaction(
           purchaseToken: purchaseToken,
           timestampInMillis: DateTime.now().millisecondsSinceEpoch,
-          productId: 'PRODUCT_ID',
+          productId: productId,
           consumedTime: DateTime.now(),
         ),
       );
@@ -57,6 +60,7 @@ void verifyTest() {
         url,
         body: json.encode({
           'uid': uid,
+          'productId': productId,
           'purchaseToken': purchaseToken,
         }),
       );
@@ -70,6 +74,7 @@ void verifyTest() {
 
     test('User Not Found', () async {
       const uid = 'UID_NOT_EXIST';
+      const productId = 'boost';
       const purchaseToken = 'PURCHASE_TOKEN';
 
       // Prepare
@@ -77,7 +82,7 @@ void verifyTest() {
         Transaction(
           purchaseToken: purchaseToken,
           timestampInMillis: DateTime.now().millisecondsSinceEpoch,
-          productId: 'PRODUCT_ID',
+          productId: productId,
         ),
       );
 
@@ -88,6 +93,7 @@ void verifyTest() {
         url,
         body: json.encode({
           'uid': uid,
+          'productId': productId,
           'purchaseToken': purchaseToken,
         }),
       );
@@ -123,6 +129,7 @@ void verifyTest() {
               url,
               body: json.encode({
                 'uid': uid,
+                'productId': productId,
                 'purchaseToken': purchaseToken,
               }),
             );

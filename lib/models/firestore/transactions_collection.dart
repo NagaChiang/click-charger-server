@@ -24,4 +24,18 @@ class TransactionsCollection {
   Future<bool> delete(String purchaseToken) async {
     return await firestoreApi.delete(_collectionId, purchaseToken);
   }
+
+  Future<bool> markAsConsumed(String purchaseToken) async {
+    final timestamp = DateTime.now().toUtc().toIso8601String();
+    final document = await firestoreApi.update(
+      _collectionId,
+      purchaseToken,
+      ['consumedTime'],
+      {
+        'fields': {'timestampValue': timestamp},
+      },
+    );
+
+    return document != null;
+  }
 }
