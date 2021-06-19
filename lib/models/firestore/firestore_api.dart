@@ -1,14 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:click_charger_server/config.dart';
 
-final firestoreApi = FirestoreApi(
-  serviceAccountFilePath: 'service-account.json',
-);
+final firestoreApi = FirestoreApi();
 
 class FirestoreApi {
   static const baseUrl = 'firestore.googleapis.com';
@@ -17,18 +14,12 @@ class FirestoreApi {
   static String get documentBasePath =>
       'projects/${Config.firebaseProjectId}/databases/(default)/documents';
 
-  final String serviceAccountFilePath;
-
-  String? _accessToken;
-
-  FirestoreApi({required this.serviceAccountFilePath});
-
   Future<dynamic> create(
     String collectionId,
     String? documentId,
     dynamic document,
   ) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await Config.getAccessToken();
     final uri = Uri.https(
       '$baseUrl',
       '$uriBasePath/$collectionId',
@@ -58,7 +49,7 @@ class FirestoreApi {
   }
 
   Future<dynamic> read(String collectionId, String documentId) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await Config.getAccessToken();
     final uri = Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId');
 
     http.Response response;
@@ -88,7 +79,7 @@ class FirestoreApi {
     Iterable<String> updateMask,
     dynamic document,
   ) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await Config.getAccessToken();
     final uri =
         Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId', {
       'currentDocument.exists': 'true',
@@ -118,7 +109,7 @@ class FirestoreApi {
   }
 
   Future<bool> delete(String collectionId, String documentId) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await Config.getAccessToken();
     final uri = Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId');
 
     http.Response response;
@@ -148,7 +139,7 @@ class FirestoreApi {
     String fieldPath,
     int amount,
   ) async {
-    final accessToken = await _getAccessToken();
+    final accessToken = await Config.getAccessToken();
 
     Uri uri;
     http.Response response;
@@ -205,28 +196,5 @@ class FirestoreApi {
       print(error);
       return null;
     }
-  }
-
-  Future<String> _getAccessToken() async {
-    if (_accessToken == null) {
-      final jsonString = await File(serviceAccountFilePath).readAsString();
-      final serviceAccountCredential =
-          ServiceAccountCredentials.fromJson(json.decode(jsonString));
-      final scopes = [
-        'https://www.googleapis.com/auth/datastore',
-      ];
-
-      print('Authenticating via service account...');
-      final client = http.Client();
-      final accessCredential = await obtainAccessCredentialsViaServiceAccount(
-        serviceAccountCredential,
-        scopes,
-        client,
-      );
-
-      _accessToken = accessCredential.accessToken.data;
-    }
-
-    return _accessToken!;
   }
 }

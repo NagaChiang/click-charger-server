@@ -1,3 +1,4 @@
+const serviceAccountFilePath = 'service-account.json';
 const rtdnApiName = 'rtdn';
 const verifyApiName = 'verify';
 const useBoostApiName = 'useBoost';
