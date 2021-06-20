@@ -65,7 +65,7 @@ class IapController {
 
     // Verify transaction via Google API
     final purchase = await publisherApi.get(
-      Config.firebaseProjectId,
+      packageName,
       productId,
       purchaseToken,
     );
