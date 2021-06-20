@@ -107,8 +107,8 @@ void verifyTest() {
 
     group('Success', () {
       group('Product ID', () {
-        void testProductId(String productId) {
-          test(productId, () async {
+        void testProductId(String productId, String purchaseToken) {
+          test('$productId, $purchaseToken', () async {
             const uid = 'UID';
             const purchaseToken = 'PURCHASE_TOKEN';
 
@@ -159,8 +159,11 @@ void verifyTest() {
           });
         }
 
-        testProductId('boost_pack_1');
-        testProductId('boost_pack_3');
+        testProductId(
+          'boost',
+          'didmaoojhkjijhnnmhmjpjld.AO-J1OxH6XxmMBI1JxPOHoGomQALyQ6sE9rK3kkU5CG4DdM2YP8nCw5mrUQ1rpCgoJR3JUSkgQYBCKjwje6A9IodSg2PnVj6dX1e8cKZ9Y9LH9KEhEVKFuo',
+        );
+        testProductId('boost_pack_3', 'PURCHASE_TOKEN');
       });
     });
   });

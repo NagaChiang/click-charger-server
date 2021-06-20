@@ -12,4 +12,4 @@ doc/api/
 .env
 
 # Service account
-service-account.json
+*service-account.json

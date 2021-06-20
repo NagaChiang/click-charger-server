@@ -17,10 +17,12 @@ jobs:
       - name: Prepare Secrets
         env:
           DOTENV: ${{ secrets.DOTENV }}
-          SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
           printf "%s" "$DOTENV" > .env
-          printf "%s" "$SERVICE_ACCOUNT_JSON" > service-account.json
+          printf "%s" "$FIREBASE_SERVICE_ACCOUNT_JSON" > firebase-service-account.json
+          printf "%s" "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > google-play-developer-service-account.json
       
       - name: Install Dependencies
         run: dart pub get

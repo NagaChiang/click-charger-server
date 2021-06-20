@@ -8,18 +8,29 @@ import 'package:click_charger_server/config.dart';
 final firestoreApi = FirestoreApi();
 
 class FirestoreApi {
+  static const serviceAccountPath = 'firebase-service-account.json';
+  static const scopes = ['https://www.googleapis.com/auth/datastore'];
   static const baseUrl = 'firestore.googleapis.com';
+
   static String get uriBasePath =>
       'v1/projects/${Config.firebaseProjectId}/databases/(default)/documents';
   static String get documentBasePath =>
       'projects/${Config.firebaseProjectId}/databases/(default)/documents';
+
+  static String? _accessToken;
+
+  static Future<String> _getAccessToken() async {
+    _accessToken ??= await Config.getAccessToken(serviceAccountPath, scopes);
+
+    return _accessToken!;
+  }
 
   Future<dynamic> create(
     String collectionId,
     String? documentId,
     dynamic document,
   ) async {
-    final accessToken = await Config.getAccessToken();
+    final accessToken = await _getAccessToken();
     final uri = Uri.https(
       '$baseUrl',
       '$uriBasePath/$collectionId',
@@ -49,7 +60,7 @@ class FirestoreApi {
   }
 
   Future<dynamic> read(String collectionId, String documentId) async {
-    final accessToken = await Config.getAccessToken();
+    final accessToken = await _getAccessToken();
     final uri = Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId');
 
     http.Response response;
@@ -79,7 +90,7 @@ class FirestoreApi {
     Iterable<String> updateMask,
     dynamic document,
   ) async {
-    final accessToken = await Config.getAccessToken();
+    final accessToken = await _getAccessToken();
     final uri =
         Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId', {
       'currentDocument.exists': 'true',
@@ -109,7 +120,7 @@ class FirestoreApi {
   }
 
   Future<bool> delete(String collectionId, String documentId) async {
-    final accessToken = await Config.getAccessToken();
+    final accessToken = await _getAccessToken();
     final uri = Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId');
 
     http.Response response;
@@ -139,7 +150,7 @@ class FirestoreApi {
     String fieldPath,
     int amount,
   ) async {
-    final accessToken = await Config.getAccessToken();
+    final accessToken = await _getAccessToken();
 
     Uri uri;
     http.Response response;

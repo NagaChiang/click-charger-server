@@ -9,15 +9,26 @@ import 'package:click_charger_server/models/android_publisher/product_purchase.d
 final publisherApi = PublisherApi();
 
 class PublisherApi {
+  static const serviceAccountPath =
+      'google-play-developer-service-account.json';
+  static const scopes = ['https://www.googleapis.com/auth/androidpublisher'];
   static const baseUrl =
       'https://androidpublisher.googleapis.com/androidpublisher/v3';
+
+  static String? _accessToken;
+
+  static Future<String> _getAccessToken() async {
+    _accessToken ??= await Config.getAccessToken(serviceAccountPath, scopes);
+
+    return _accessToken!;
+  }
 
   Future<ProductPurchase?> get(
     String packageName,
     String productId,
     String token,
   ) async {
-    final accessToken = await Config.getAccessToken();
+    final accessToken = await _getAccessToken();
     final uri = Uri.parse(
       '$baseUrl/applications/$packageName/purchases/products/$productId/tokens/$token',
     );
