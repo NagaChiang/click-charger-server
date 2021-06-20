@@ -3,7 +3,7 @@ steps:
     entrypoint: 'bash'
     args:
       - '-c'
-      - 'docker build --no-cache -t $_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA . -f Dockerfile --build-arg "DOTENV=$$DOTENV" --build-arg "FIREBASE_SERVICE_ACCOUNT_JSON=$$FIREBASE_SERVICE_ACCOUNT_JSON" --build-arg "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=$$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON'
+      - 'docker build --no-cache -t $_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA . -f Dockerfile --build-arg "DOTENV=$$DOTENV" --build-arg "FIREBASE_SERVICE_ACCOUNT_JSON=$$FIREBASE_SERVICE_ACCOUNT_JSON" --build-arg "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=$$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"'
     secretEnv:
       - 'DOTENV'
       - 'FIREBASE_SERVICE_ACCOUNT_JSON'
