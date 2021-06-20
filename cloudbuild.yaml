@@ -47,8 +47,8 @@ availableSecrets:
   secretManager:
   - versionName: projects/593718523769/secrets/SERVER_DOTENV/versions/1
     env: 'DOTENV'
-  - versionName: projects/593718523769/secrets/FIREBASE_SERVICE_ACCOUNT_JSON/versions/1
+  - versionName: projects/593718523769/secrets/FIREBASE_SERVICE_ACCOUNT_JSON/versions/2
     env: 'FIREBASE_SERVICE_ACCOUNT_JSON'
-  - versionName: projects/593718523769/secrets/GOOGLE_PLAY_SERVICE_ACCOUNT_JSON/versions/1
+  - versionName: projects/593718523769/secrets/GOOGLE_PLAY_SERVICE_ACCOUNT_JSON/versions/2
     env: 'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON'
 
