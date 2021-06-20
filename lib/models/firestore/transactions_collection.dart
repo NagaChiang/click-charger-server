@@ -32,7 +32,9 @@ class TransactionsCollection {
       purchaseToken,
       ['consumedTime'],
       {
-        'fields': {'timestampValue': timestamp},
+        'fields': {
+          'consumedTime': {'timestampValue': timestamp}
+        },
       },
     );
 
