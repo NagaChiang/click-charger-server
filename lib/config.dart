@@ -25,6 +25,6 @@ class Config {
       client,
     );
 
-    return accessCredential.accessToken.data!;
+    return accessCredential.accessToken.data;
   }
 }
