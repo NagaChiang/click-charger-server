@@ -15,8 +15,8 @@ void main() {
     server.serve(internetAddress, port);
   });
 
-  tearDown(() {
-    server.close(force: true);
+  tearDown(() async {
+    return await server.close(force: true);
   });
 
   rtdnTest();
