@@ -12,11 +12,22 @@ class ProductPurchase {
   final String orderId;
   final int purchaseType;
   final int acknowledgementState;
+
+  @JsonKey(defaultValue: '')
   final String purchaseToken;
+
+  @JsonKey(defaultValue: '')
   final String productId;
+
+  @JsonKey(defaultValue: 0)
   final int quantity;
+
+  @JsonKey(defaultValue: '')
   final String obfuscatedExternalAccountId;
+
+  @JsonKey(defaultValue: '')
   final String obfuscatedExternalProfileId;
+
   final String regionCode;
 
   bool get isPurchased => purchaseState == 0;

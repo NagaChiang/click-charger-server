@@ -49,7 +49,9 @@ class FirestoreApi {
       return null;
     }
 
-    print('Firestore API: POST $uri (${response.statusCode})');
+    print(
+      'Firestore API: ${response.request?.method} $uri (${response.statusCode})',
+    );
 
     if (response.statusCode != HttpStatus.ok) {
       print(response.body);
@@ -74,7 +76,9 @@ class FirestoreApi {
       return null;
     }
 
-    print('Firestore API: GET $uri (${response.statusCode})');
+    print(
+      'Firestore API: ${response.request?.method} $uri (${response.statusCode})',
+    );
 
     if (response.statusCode != HttpStatus.ok) {
       print(response.body);
@@ -109,7 +113,9 @@ class FirestoreApi {
       return null;
     }
 
-    print('Firestore API: PATCH $uri (${response.statusCode})');
+    print(
+      'Firestore API: ${response.request?.method} $uri (${response.statusCode})',
+    );
 
     if (response.statusCode != HttpStatus.ok) {
       print(response.body);
@@ -134,7 +140,9 @@ class FirestoreApi {
       return false;
     }
 
-    print('Firestore API: DELETE $uri (${response.statusCode})');
+    print(
+      'Firestore API: ${response.request?.method} $uri (${response.statusCode})',
+    );
 
     if (response.statusCode != HttpStatus.ok) {
       print(response.body);
@@ -162,7 +170,9 @@ class FirestoreApi {
         headers: {'Authorization': 'Bearer $accessToken'},
       );
 
-      print('Firestore API: POST $uri (${response.statusCode})');
+      print(
+        'Firestore API: ${response.request?.method} $uri (${response.statusCode})',
+      );
       if (response.statusCode != HttpStatus.ok) {
         print(response.body);
         return null;

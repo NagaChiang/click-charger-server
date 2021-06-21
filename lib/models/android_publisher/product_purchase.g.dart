@@ -16,11 +16,13 @@ ProductPurchase _$ProductPurchaseFromJson(Map<String, dynamic> json) {
     orderId: json['orderId'] as String,
     purchaseType: json['purchaseType'] as int,
     acknowledgementState: json['acknowledgementState'] as int,
-    purchaseToken: json['purchaseToken'] as String,
-    productId: json['productId'] as String,
-    quantity: json['quantity'] as int,
-    obfuscatedExternalAccountId: json['obfuscatedExternalAccountId'] as String,
-    obfuscatedExternalProfileId: json['obfuscatedExternalProfileId'] as String,
+    purchaseToken: json['purchaseToken'] as String? ?? '',
+    productId: json['productId'] as String? ?? '',
+    quantity: json['quantity'] as int? ?? 0,
+    obfuscatedExternalAccountId:
+        json['obfuscatedExternalAccountId'] as String? ?? '',
+    obfuscatedExternalProfileId:
+        json['obfuscatedExternalProfileId'] as String? ?? '',
     regionCode: json['regionCode'] as String,
   );
 }

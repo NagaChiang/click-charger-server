@@ -35,7 +35,7 @@ class PublisherApi {
 
     http.Response response;
     try {
-      response = await http.post(
+      response = await http.get(
         uri,
         headers: {'Authorization': 'Bearer $accessToken'},
       );
@@ -44,7 +44,9 @@ class PublisherApi {
       return null;
     }
 
-    print('Android Publisher API: GET $uri (${response.statusCode})');
+    print(
+      'Android Publisher API: ${response.request?.method} $uri (${response.statusCode})',
+    );
 
     if (response.statusCode != HttpStatus.ok) {
       print(response.body);

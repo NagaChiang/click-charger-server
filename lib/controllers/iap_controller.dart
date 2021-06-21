@@ -70,6 +70,8 @@ class IapController {
       purchaseToken,
     );
 
+    print(purchase?.toJson());
+
     // Check purchase state
     if (purchase != null && !purchase.isPurchased) {
       final message =
