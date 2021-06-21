@@ -110,7 +110,6 @@ void verifyTest() {
         void testProductId(String productId, String purchaseToken) {
           test('$productId, $purchaseToken', () async {
             const uid = 'UID';
-            const purchaseToken = 'PURCHASE_TOKEN';
 
             // Prepare
             final transaction = await transactionsCollection.create(
@@ -161,7 +160,7 @@ void verifyTest() {
 
         testProductId(
           'boost',
-          'didmaoojhkjijhnnmhmjpjld.AO-J1OxH6XxmMBI1JxPOHoGomQALyQ6sE9rK3kkU5CG4DdM2YP8nCw5mrUQ1rpCgoJR3JUSkgQYBCKjwje6A9IodSg2PnVj6dX1e8cKZ9Y9LH9KEhEVKFuo',
+          'kjncgbcjodopionbkompfeii.AO-J1OzgFRza65BESKM1Eu8Sy_V0nBBkZqVGjGyJcm3ccmhdnEObnDu2cfYfEifDBzMYnZkGKIRGiyH8zzzvDz7_V9TVwH4w9CI6mvVUDz0u5ej8BL2Vju0',
         );
         testProductId('boost_pack_3', 'PURCHASE_TOKEN');
       });
