@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:http/http.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
@@ -20,7 +21,8 @@ class ClickChargerServer {
     _router = Router()
       ..post('/$rtdnApiName', iapController.rtdn)
       ..post('/$verifyApiName', iapController.verify)
-      ..post('/$useBoostApiName', iapController.useBoost);
+      ..post('/$useBoostApiName', iapController.useBoost)
+      ..post('/$rewardedAdApiName', iapController.rewardedAd);
     _cascade = Cascade().add(_router);
     _pipeline =
         Pipeline().addMiddleware(logRequests()).addHandler(_cascade.handler);

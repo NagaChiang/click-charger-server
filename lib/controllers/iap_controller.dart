@@ -194,23 +194,20 @@ class IapController {
     }
 
     // Update end time
-    final currentEndTime =
-        await usersCollection.getBoostEndTime(uid) ?? DateTime.now();
-    var startTime = DateTime.now();
-    if (currentEndTime.isAfter(DateTime.now())) {
-      startTime = currentEndTime;
-    }
-
+    final currentEndTime = await usersCollection.getBoostEndTime(uid);
+    final startTime =
+        currentEndTime != null && currentEndTime.isAfter(DateTime.now())
+            ? currentEndTime
+            : DateTime.now();
     final newEndTime = startTime.add(durationPerBoost * useCount);
     final updateTimeResult =
         await usersCollection.updateBoostEndTime(uid, newEndTime);
     if (!updateTimeResult) {
-      final message =
-          'User "$uid" failed to update boost end time (new: $newEndTime, current: $currentEndTime)';
+      final message = 'User "$uid" failed to update boost end time';
       print('[UseBoost] $message');
 
       // Recover boost count
-      print('[UseBoost] Recovering boost count ($useCount)...');
+      print('[UseBoost] Refunding boost count ($useCount)...');
       await usersCollection.addBoostCount(uid, useCount);
 
       return Response(HttpStatus.internalServerError, body: message);
@@ -233,6 +230,63 @@ class IapController {
     return Response.ok(json.encode({
       'count': newCount,
       'endTime': newEndTime.toUtc().toIso8601String(),
+    }));
+  }
+
+  Future<Response> rewardedAd(Request request) async {
+    String uid;
+    try {
+      final bodyJson = json.decode(await request.readAsString());
+      uid = bodyJson['uid'] as String;
+    } catch (error) {
+      print('$error');
+      return Response(HttpStatus.badRequest);
+    }
+
+    print('[RewardedAd] User "$uid" tries to obtain reward for ad');
+
+    // Check next rewarded ad time
+    final nextAdTime =
+        await usersCollection.getNextRewardedAdTime(uid) ?? DateTime.now();
+    if (nextAdTime.isAfter(DateTime.now())) {
+      final message =
+          'User "$uid"\'s next valid rewarded ad time is ${nextAdTime.toUtc().toIso8601String()}';
+      print('[RewardedAd] $message');
+      return Response(HttpStatus.conflict, body: message);
+    }
+
+    // Update boost end time
+    final currentEndTime = await usersCollection.getBoostEndTime(uid);
+    final startTime =
+        currentEndTime != null && currentEndTime.isAfter(DateTime.now())
+            ? currentEndTime
+            : DateTime.now();
+    final newEndTime = startTime.add(durationPerBoost);
+    final updateBoostTimeResult =
+        await usersCollection.updateBoostEndTime(uid, newEndTime);
+    if (!updateBoostTimeResult) {
+      final message = 'User "$uid" failed to update boost end time';
+      print('[RewardedAd] $message');
+
+      return Response(HttpStatus.internalServerError, body: message);
+    }
+
+    // Update next rewarded ad time
+    final newAdTimeStart =
+        nextAdTime.isBefore(DateTime.now()) ? DateTime.now() : nextAdTime;
+    final newAdTime = newAdTimeStart.add(rewardedAdCooldown);
+    final updateAdTimeResult =
+        await usersCollection.updateNextRewardedAdTime(uid, newAdTime);
+    if (!updateAdTimeResult) {
+      final message = 'User "$uid" failed to update next rewarded ad time';
+      print('[RewardedAd] $message');
+
+      return Response(HttpStatus.internalServerError, body: message);
+    }
+
+    return Response.ok(json.encode({
+      'nextRewardedAdTime': newAdTime.toUtc().toIso8601String(),
+      'boostEndTime': newEndTime.toUtc().toIso8601String(),
     }));
   }
 }

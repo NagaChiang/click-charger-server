@@ -2,10 +2,11 @@ import 'package:test/test.dart';
 
 import 'package:click_charger_server/click_charger_server.dart';
 
+import 'api/rewarded_ad.dart';
 import 'api/rtdn.dart';
 import 'api/use_boost.dart';
 import 'api/verify.dart';
-import 'test_config.dart';
+import 'configs.dart';
 
 void main() {
   late ClickChargerServer server;
@@ -22,4 +23,5 @@ void main() {
   rtdnTest();
   verifyTest();
   useBoostTest();
+  rewardedAdTest();
 }

@@ -10,7 +10,7 @@ import 'package:click_charger_server/models/RTDN/one_time_product_notification.d
 import 'package:click_charger_server/models/RTDN/test_notification.dart';
 import 'package:click_charger_server/models/firestore/transactions_collection.dart';
 
-import '../test_config.dart';
+import '../configs.dart';
 
 void rtdnTest() {
   final url = Uri.parse('$baseUrl/$rtdnApiName');

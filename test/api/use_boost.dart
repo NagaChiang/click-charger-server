@@ -7,13 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:click_charger_server/constants.dart';
 import 'package:click_charger_server/models/firestore/users_collection.dart';
 
-import '../test_config.dart';
-
-enum EndTimeType {
-  noField,
-  before,
-  after,
-}
+import '../configs.dart';
+import '../enums.dart';
 
 void useBoostTest() {
   final url = Uri.parse('$baseUrl/$useBoostApiName');
@@ -58,7 +53,7 @@ void useBoostTest() {
             isNotNull,
           );
 
-          // Test
+          // Request
           final response = await http.post(
             url,
             body: json.encode({
@@ -80,7 +75,7 @@ void useBoostTest() {
     });
 
     group('Enough Boost', () {
-      void testEnoughBoost(int useCount, EndTimeType currentEndTimeType) {
+      void testEnoughBoost(int useCount, TestTimeType currentEndTimeType) {
         test('$useCount, $currentEndTimeType', () async {
           const uid = 'UID';
           const endTimeShiftDuration = Duration(days: 1);
@@ -90,14 +85,14 @@ void useBoostTest() {
           DateTime? currentEndTime;
           var shouldEndTime = DateTime.now();
           switch (currentEndTimeType) {
-            case EndTimeType.noField:
+            case TestTimeType.noField:
               shouldEndTime = DateTime.now().add(boostDuration);
               break;
-            case EndTimeType.before:
+            case TestTimeType.before:
               currentEndTime = DateTime.now().subtract(endTimeShiftDuration);
               shouldEndTime = DateTime.now().add(boostDuration);
               break;
-            case EndTimeType.after:
+            case TestTimeType.after:
               currentEndTime = DateTime.now().add(endTimeShiftDuration);
               shouldEndTime = currentEndTime.add(boostDuration);
               break;
@@ -120,7 +115,7 @@ void useBoostTest() {
             isNotNull,
           );
 
-          // Test
+          // Request
           final response = await http.post(
             url,
             body: json.encode({
@@ -148,9 +143,9 @@ void useBoostTest() {
         });
       }
 
-      testEnoughBoost(1, EndTimeType.noField);
-      testEnoughBoost(2, EndTimeType.before);
-      testEnoughBoost(3, EndTimeType.after);
+      testEnoughBoost(1, TestTimeType.noField);
+      testEnoughBoost(2, TestTimeType.before);
+      testEnoughBoost(3, TestTimeType.after);
     });
   });
 }

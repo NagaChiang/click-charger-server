@@ -7,6 +7,7 @@ class UsersCollection {
   static const _boostCountFieldPath = 'boostCount';
   static const _boostEndTimeFieldPath = 'boostEndTime';
   static const _isRemoveAdFieldPath = 'isRemoveAd';
+  static const _nextRewardedAdTimeFieldPath = 'nextRewardedAdTime';
 
   Future<int?> addBoostCount(String uid, int count) async {
     return await firestoreApi.add(
@@ -18,7 +19,12 @@ class UsersCollection {
   }
 
   Future<int?> getBoostCount(String uid) async {
-    final data = await firestoreApi.read(_collectionId, uid);
+    final data = await firestoreApi.read(
+      _collectionId,
+      uid,
+      [_boostCountFieldPath],
+    );
+
     if (data == null) {
       return null;
     }
@@ -28,7 +34,12 @@ class UsersCollection {
   }
 
   Future<DateTime?> getBoostEndTime(String uid) async {
-    final data = await firestoreApi.read(_collectionId, uid);
+    final data = await firestoreApi.read(
+      _collectionId,
+      uid,
+      [_boostEndTimeFieldPath],
+    );
+
     if (data == null) {
       return null;
     }
@@ -62,6 +73,38 @@ class UsersCollection {
       {
         'fields': {
           _isRemoveAdFieldPath: {'booleanValue': true},
+        }
+      },
+    );
+
+    return result != null;
+  }
+
+  Future<DateTime?> getNextRewardedAdTime(String uid) async {
+    final data = await firestoreApi.read(
+      _collectionId,
+      uid,
+      [_nextRewardedAdTimeFieldPath],
+    );
+
+    if (data == null) {
+      return null;
+    }
+
+    final timestamp =
+        data['fields']?[_nextRewardedAdTimeFieldPath]?['timestampValue'];
+    return timestamp != null ? DateTime.tryParse(timestamp) : DateTime.now();
+  }
+
+  Future<bool> updateNextRewardedAdTime(String uid, DateTime time) async {
+    final timestamp = time.toUtc().toIso8601String();
+    final result = await firestoreApi.update(
+      _collectionId,
+      uid,
+      [_nextRewardedAdTimeFieldPath],
+      {
+        'fields': {
+          _nextRewardedAdTimeFieldPath: {'timestampValue': timestamp},
         }
       },
     );

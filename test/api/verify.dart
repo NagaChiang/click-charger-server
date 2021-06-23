@@ -10,7 +10,7 @@ import 'package:click_charger_server/models/firestore/transaction.dart';
 import 'package:click_charger_server/models/firestore/transactions_collection.dart';
 import 'package:click_charger_server/models/firestore/users_collection.dart';
 
-import '../test_config.dart';
+import '../configs.dart';
 
 void verifyTest() {
   final url = Uri.parse('$baseUrl/$verifyApiName');
@@ -55,7 +55,7 @@ void verifyTest() {
 
       expect(transaction, isNotNull);
 
-      // Test
+      // Request
       final response = await http.post(
         url,
         body: json.encode({
@@ -88,7 +88,7 @@ void verifyTest() {
 
       expect(transaction, isNotNull);
 
-      // Test
+      // Request
       final response = await http.post(
         url,
         body: json.encode({
@@ -105,7 +105,7 @@ void verifyTest() {
       expect(response.statusCode, HttpStatus.notFound);
     });
 
-    group('Success', () {
+    group('Ok', () {
       group('Product ID', () {
         void testProductId(String productId, String purchaseToken) {
           test('$productId, $purchaseToken', () async {
@@ -123,7 +123,7 @@ void verifyTest() {
             expect(transaction, isNotNull);
             expect(await usersCollection.create(uid), isNotNull);
 
-            // Test
+            // Request
             final response = await http.post(
               url,
               body: json.encode({

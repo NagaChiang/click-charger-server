@@ -61,9 +61,17 @@ class FirestoreApi {
     return json.decode(response.body);
   }
 
-  Future<dynamic> read(String collectionId, String documentId) async {
+  Future<dynamic> read(
+    String collectionId,
+    String documentId, [
+    Iterable<String>? mask,
+  ]) async {
     final accessToken = await _getAccessToken();
-    final uri = Uri.https('$baseUrl', '$uriBasePath/$collectionId/$documentId');
+    final uri = Uri.https(
+      '$baseUrl',
+      '$uriBasePath/$collectionId/$documentId',
+      mask != null ? {'mask.fieldPaths': mask} : null,
+    );
 
     http.Response response;
     try {
