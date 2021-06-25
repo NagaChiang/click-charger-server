@@ -1,6 +1,6 @@
 name: click_charger_server
 description: Server for Click Charger.
-version: 0.5.0
+version: 0.5.1
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
