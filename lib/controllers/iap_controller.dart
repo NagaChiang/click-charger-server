@@ -222,10 +222,10 @@ class IapController {
       newEndTime: newEndTime,
     );
 
-    final logResult = await boostLogsCollection.create(boostLog);
-    if (!logResult) {
-      print('[UseBoost] Failed to log for using boost');
-    }
+    // final logResult = await boostLogsCollection.create(boostLog);
+    // if (!logResult) {
+    //   print('[UseBoost] Failed to log for using boost');
+    // }
 
     return Response.ok(json.encode({
       'count': newCount,
