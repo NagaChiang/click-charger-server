@@ -4,13 +4,28 @@ part 'product_purchase.g.dart';
 
 @JsonSerializable()
 class ProductPurchase {
+  @JsonKey(defaultValue: '')
   final String kind;
+
+  @JsonKey(defaultValue: '')
   final String purchaseTimeMillis;
+
+  @JsonKey(defaultValue: 2)
   final int purchaseState;
+
+  @JsonKey(defaultValue: 1)
   final int consumptionState;
+
+  @JsonKey(defaultValue: '')
   final String developerPayload;
+
+  @JsonKey(defaultValue: '')
   final String orderId;
+
+  @JsonKey(defaultValue: 0)
   final int purchaseType;
+
+  @JsonKey(defaultValue: 0)
   final int acknowledgementState;
 
   @JsonKey(defaultValue: '')
@@ -28,6 +43,7 @@ class ProductPurchase {
   @JsonKey(defaultValue: '')
   final String obfuscatedExternalProfileId;
 
+  @JsonKey(defaultValue: '')
   final String regionCode;
 
   bool get isPurchased => purchaseState == 0;

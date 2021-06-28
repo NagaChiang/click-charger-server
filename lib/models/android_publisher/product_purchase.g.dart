@@ -8,14 +8,14 @@ part of 'product_purchase.dart';
 
 ProductPurchase _$ProductPurchaseFromJson(Map<String, dynamic> json) {
   return ProductPurchase(
-    kind: json['kind'] as String,
-    purchaseTimeMillis: json['purchaseTimeMillis'] as String,
-    purchaseState: json['purchaseState'] as int,
-    consumptionState: json['consumptionState'] as int,
-    developerPayload: json['developerPayload'] as String,
-    orderId: json['orderId'] as String,
-    purchaseType: json['purchaseType'] as int,
-    acknowledgementState: json['acknowledgementState'] as int,
+    kind: json['kind'] as String? ?? '',
+    purchaseTimeMillis: json['purchaseTimeMillis'] as String? ?? '',
+    purchaseState: json['purchaseState'] as int? ?? 2,
+    consumptionState: json['consumptionState'] as int? ?? 1,
+    developerPayload: json['developerPayload'] as String? ?? '',
+    orderId: json['orderId'] as String? ?? '',
+    purchaseType: json['purchaseType'] as int? ?? 0,
+    acknowledgementState: json['acknowledgementState'] as int? ?? 0,
     purchaseToken: json['purchaseToken'] as String? ?? '',
     productId: json['productId'] as String? ?? '',
     quantity: json['quantity'] as int? ?? 0,
@@ -23,7 +23,7 @@ ProductPurchase _$ProductPurchaseFromJson(Map<String, dynamic> json) {
         json['obfuscatedExternalAccountId'] as String? ?? '',
     obfuscatedExternalProfileId:
         json['obfuscatedExternalProfileId'] as String? ?? '',
-    regionCode: json['regionCode'] as String,
+    regionCode: json['regionCode'] as String? ?? '',
   );
 }
 
