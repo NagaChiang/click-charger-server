@@ -25,14 +25,21 @@ class TransactionsCollection {
     return await firestoreApi.delete(_collectionId, purchaseToken);
   }
 
-  Future<bool> markAsConsumed(String purchaseToken) async {
+  Future<bool> consumePendingTransaction(
+    String uid,
+    String purchaseToken,
+  ) async {
     final timestamp = DateTime.now().toUtc().toIso8601String();
     final document = await firestoreApi.update(
       _collectionId,
       purchaseToken,
-      ['consumedTime'],
+      [
+        'uid',
+        'consumedTime',
+      ],
       {
         'fields': {
+          'uid': {'stringValue': uid},
           'consumedTime': {'timestampValue': timestamp}
         },
       },

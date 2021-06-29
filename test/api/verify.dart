@@ -46,6 +46,7 @@ void verifyTest() {
       // Prepare
       final transaction = await transactionsCollection.create(
         Transaction(
+          uid: uid,
           purchaseToken: purchaseToken,
           timestampInMillis: DateTime.now().millisecondsSinceEpoch,
           productId: productId,
@@ -80,6 +81,7 @@ void verifyTest() {
       // Prepare
       final transaction = await transactionsCollection.create(
         Transaction(
+          uid: null,
           purchaseToken: purchaseToken,
           timestampInMillis: DateTime.now().millisecondsSinceEpoch,
           productId: productId,
@@ -107,13 +109,18 @@ void verifyTest() {
 
     group('Ok', () {
       group('Product ID', () {
-        void testProductId(String productId, String purchaseToken) {
+        void testProductId(
+          String productId,
+          String purchaseToken,
+          bool transactionHasUid,
+        ) {
           test('$productId, $purchaseToken', () async {
             const uid = 'UID';
 
             // Prepare
             final transaction = await transactionsCollection.create(
               Transaction(
+                uid: transactionHasUid ? uid : null,
                 purchaseToken: purchaseToken,
                 timestampInMillis: DateTime.now().millisecondsSinceEpoch,
                 productId: productId,
@@ -136,9 +143,13 @@ void verifyTest() {
             final updatedUser = await usersCollection.readRaw(uid);
             expect(updatedUser, isNotNull);
 
+            final updatedTran =
+                await transactionsCollection.read(purchaseToken);
+            expect(updatedTran, isNotNull);
+
             // Clean up
-            expect(await transactionsCollection.delete(purchaseToken), isTrue);
             expect(await usersCollection.delete(uid), isTrue);
+            expect(await transactionsCollection.delete(purchaseToken), isTrue);
 
             // Test
             expect(response.statusCode, HttpStatus.ok);
@@ -155,14 +166,19 @@ void verifyTest() {
               updatedUser['fields']['isRemoveAd']['booleanValue'],
               true,
             );
+
+            expect(updatedTran!.uid, uid);
+            expect(updatedTran.consumedTime, isNotNull);
           });
         }
 
         testProductId(
           'boost',
           'kjncgbcjodopionbkompfeii.AO-J1OzgFRza65BESKM1Eu8Sy_V0nBBkZqVGjGyJcm3ccmhdnEObnDu2cfYfEifDBzMYnZkGKIRGiyH8zzzvDz7_V9TVwH4w9CI6mvVUDz0u5ej8BL2Vju0',
+          false,
         );
-        testProductId('boost_pack_3', 'PURCHASE_TOKEN');
+
+        testProductId('boost_pack_3', 'PURCHASE_TOKEN', true);
       });
     });
   });

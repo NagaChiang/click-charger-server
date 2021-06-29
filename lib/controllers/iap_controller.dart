@@ -11,7 +11,6 @@ import 'package:click_charger_server/models/firestore/transaction.dart';
 import 'package:click_charger_server/models/firestore/transactions_collection.dart';
 import 'package:click_charger_server/models/firestore/users_collection.dart';
 import 'package:click_charger_server/models/firestore/boost_log.dart';
-import 'package:click_charger_server/models/firestore/boost_logs_collection.dart';
 import 'package:click_charger_server/models/RTDN/realtime_developer_notification.dart';
 
 final iapController = IapController();
@@ -30,6 +29,7 @@ class IapController {
 
     if (notification.oneTimeProductNotification != null) {
       final transaction = Transaction(
+        uid: null,
         purchaseToken: notification.oneTimeProductNotification!.purchaseToken,
         timestampInMillis: notification.eventTimeMillis,
         productId: notification.oneTimeProductNotification!.sku,
@@ -124,11 +124,13 @@ class IapController {
     if (transaction == null) {
       // Create transaction
       final doc = await transactionsCollection.create(Transaction(
+        uid: uid,
         purchaseToken: purchaseToken,
         timestampInMillis: int.parse(purchase!.purchaseTimeMillis),
         productId: productId,
         consumedTime: DateTime.now(),
       ));
+
       if (doc == null) {
         print(
           '[Verify] Failed to create log for transaction "$purchaseToken"',
@@ -136,7 +138,11 @@ class IapController {
       }
     } else {
       // Update transaction
-      final result = await transactionsCollection.markAsConsumed(purchaseToken);
+      final result = await transactionsCollection.consumePendingTransaction(
+        uid,
+        purchaseToken,
+      );
+
       if (!result) {
         print(
           '[Verify] Failed to mark transaction "$purchaseToken" as consumed',
@@ -214,13 +220,13 @@ class IapController {
     }
 
     // Log
-    final boostLog = BoostLog(
-      uid: uid,
-      oldCount: currentCount,
-      newCount: newCount,
-      oldEndTime: currentEndTime,
-      newEndTime: newEndTime,
-    );
+    // final boostLog = BoostLog(
+    //   uid: uid,
+    //   oldCount: currentCount,
+    //   newCount: newCount,
+    //   oldEndTime: currentEndTime,
+    //   newEndTime: newEndTime,
+    // );
 
     // final logResult = await boostLogsCollection.create(boostLog);
     // if (!logResult) {
